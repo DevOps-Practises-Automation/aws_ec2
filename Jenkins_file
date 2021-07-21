@@ -1,0 +1,27 @@
+pipeline {
+    agent any    
+    parameters{
+        string(name: 'InstanceID1', description: 'EC2 Instance')
+        string(name: 'InstanceID2', description: 'EC2 Instance')
+        choice(choices: ['Start', 'Stop'], name: 'State')
+    }
+    stages {
+        stage("State of the Ec2 Instance") {
+            steps {
+                withAWS(credentials: 'aws_credentials', region: 'us-west-2') {
+                    sh '''
+                    if [ "$State" = "Start" ]
+                    then
+                       aws ec2 start-instances --instance-ids $InstanceID1 $InstanceID2
+                       echo "Instance Started"
+                    elif [ "$State" = "Stop" ]
+                    then
+                       aws ec2 stop-instances --instance-ids $InstanceID1 $InstanceID2
+                       echo "Instance Stopped"
+                    fi
+                '''
+                }
+            }
+        }
+    }
+}
